@@ -6,7 +6,10 @@ import logging
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
+# Hardcoded configuration
+PROJECT_ID = "PROJECT_ID"  # REPLACE WITH YOUR ACTUAL PROJECT ID
+REGION = "us-central1"          # Must be a supported Vertex AI region
+MODEL_NAME = "MODEL_NAME" # Current recommended model
 
 def initialize_vertex_ai():
     try:
