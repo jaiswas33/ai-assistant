@@ -8,9 +8,9 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 # Initialize Vertex AI
-vertexai.init(project=os.getenv("GCP_PROJECT"), 
-              location=os.getenv("GCP_REGION"))
-model = GenerativeModel("MODEL_NAME")
+vertexai.init(project=os.getenv("GCP_PROJECT", "eight-brothers"), 
+              location=os.getenv("GCP_REGION", "us-central1"))
+model = GenerativeModel("gemini-2.5-flash-preview-05-20")
 chat = model.start_chat(history=[])
 
 @app.route('/')
