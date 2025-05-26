@@ -6,10 +6,7 @@ import logging
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
-# Hardcoded configuration
-PROJECT_ID = "eight-brothers"  # REPLACE WITH YOUR ACTUAL PROJECT ID
-REGION = "us-central1"          # Must be a supported Vertex AI region
-MODEL_NAME = "gemini-2.5-flash-preview-05-20" # Current recommended model
+
 
 def initialize_vertex_ai():
     try:
