@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumina AI - Your Intelligent Assistant</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #7c4dff;
+      --primary-light: #b47cff;
+      --primary-dark: #4a1dcc;
+      --secondary: #ff6d4a;
+      --text: #2d3748;
+      --text-light: #718096;
+      --bg: linear-gradient(135deg, #f5f7ff 0%, #f0f4ff 100%);
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --user-bubble: #e3f2fd;
+      --ai-bubble: #f3e5ff;
+      --shadow: 0 10px 25px -5px rgba(124, 77, 255, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: fadeInDown 0.6s ease;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      color: var(--primary);
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      font-size: 2.5rem;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .subtitle {
+      color: var(--text-light);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .chat-container {
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    #chatBox {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      margin-bottom: 1.5rem;
+      animation: messageIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes messageIn {
+      from { opacity: 0; transform: translateY(15px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .user-message {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .ai-message {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .bubble {
+      max-width: 80%;
+      padding: 1.25rem;
+      border-radius: 20px;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .user-bubble {
+      background: var(--user-bubble);
+      border-bottom-right-radius: 5px;
+    }
+
+    .ai-bubble {
+      background: var(--ai-bubble);
+      border-bottom-left-radius: 5px;
+    }
+
+    .message-label {
+      font-weight: 700;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .message-content {
+      margin: 0;
+      font-size: 1.05rem;
+      line-height: 1.5;
+    }
+
+    .message-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.8);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--primary);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .action-btn:hover {
+      background: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .action-btn:active {
+      transform: translateY(0);
+    }
+
+    .action-btn.playing {
+      color: var(--secondary);
+      background: white;
+    }
+
+    .controls {
+      padding: 1.5rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    #listenBtn {
+      background: linear-gradient(to right, var(--primary), var(--primary-light));
+      color: white;
+      border: none;
+      padding: 1rem 2.5rem;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(124, 77, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #listenBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(124, 77, 255, 0.4);
+    }
+
+    #listenBtn:disabled {
+      background: #e2e8f0;
+      transform: none;
+      box-shadow: none;
+      cursor: not-allowed;
+      color: #a0aec0;
+    }
+
+    #listenBtn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0.3), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+
+    #listenBtn:hover::before {
+      transform: translateX(100%);
+    }
+
+    #status {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--text-light);
+      height: 1.2rem;
+    }
+
+    .pulse {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    /* Typing indicator */
+    .typing {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      animation: typingAnimation 1.4s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: 0s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingAnimation {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .bubble {
+        max-width: 90%;
+        padding: 1rem;
+      }
+      
+      #listenBtn {
+        padding: 0.8rem 1.8rem;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Lumina AI</h1>
+      <p class="subtitle">Your intelligent voice assistant with natural conversation</p>
+    </header>
+
+    <div class="chat-container">
+      <div id="chatBox">
+        <!-- Messages will appear here -->
+      </div>
+
+      <div class="controls">
+        <button id="listenBtn">
+          <i class="fas fa-microphone"></i>
+          Start Talking
+        </button>
+      </div>
+    </div>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const listenBtn = document.getElementById("listenBtn");
+    const statusEl = document.getElementById("status");
+    const chatBox = document.getElementById("chatBox");
+    let synth = window.speechSynthesis;
+    let voices = [];
+    let femaleVoice = null;
+    let currentUtterance = null;
+    let isListening = false;
+    let recognition;
+
+    // Load voices and find the best female voice
+    function loadVoices() {
+      voices = synth.getVoices();
+      
+      // Priority list of preferred female voices
+      const preferredVoices = [
+        "Microsoft Zira Desktop",  // Windows
+        "Samantha",               // macOS
+        "Karen",                  // Australian
+        "Tessa",                  // South African
+        "Fiona",                  // Scottish
+        "Google UK English Female",
+        "Google US English Female",
+        "English Female"
+      ];
+      
+      // Find the first available preferred voice
+      femaleVoice = voices.find(voice => 
+        preferredVoices.includes(voice.name) || 
+        (voice.name.includes("Female") && voice.lang.includes("en"))
+      );
+      
+      // Fallback to first available English voice if no female found
+      if (!femaleVoice) {
+        femaleVoice = voices.find(voice => voice.lang.includes("en"));
+      }
+      
+      console.log("Using voice:", femaleVoice?.name || "Default");
+    }
+
+    // Initialize voices
+    synth.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    // Speak text with selected voice
+    function speak(text, playButton = null) {
+      // Cancel any ongoing speech
+      if (synth.speaking) {
+        synth.cancel();
+      }
+      
+      // Create new utterance
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Configure voice
+      if (femaleVoice) {
+        utterance.voice = femaleVoice;
+        utterance.pitch = 1.1;  // Slightly higher pitch
+        utterance.rate = 1.0;   // Normal speed
+        utterance.volume = 1.0;
+      }
+      
+      // Update UI if play button provided
+      if (playButton) {
+        playButton.classList.add('playing');
+        playButton.innerHTML = '<i class="fas fa-stop"></i>';
+      }
+      
+      // Event handlers
+      utterance.onstart = () => {
+        currentUtterance = utterance;
+      };
+      
+      utterance.onend = () => {
+        if (playButton) {
+          playButton.classList.remove('playing');
+          playButton.innerHTML = '<i class="fas fa-play"></i>';
+        }
+        currentUtterance = null;
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('Speech error:', event);
+        if (playButton) {
+          playButton.classList.remove('playing');
+          playButton.innerHTML = '<i class="fas fa-play"></i>';
+        }
+      };
+      
+      // Start speaking
+      synth.speak(utterance);
+    }
+
+    // Stop any ongoing speech
+    function stopSpeaking() {
+      if (synth.speaking) {
+        synth.cancel();
+      }
+      currentUtterance = null;
+    }
+
+    // Add message to chat
+    function addMessage(role, content) {
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `message ${role}-message`;
+
+      const bubbleDiv = document.createElement("div");
+      bubbleDiv.className = `bubble ${role}-bubble`;
+
+      const label = document.createElement("div");
+      label.className = "message-label";
+      
+      if (role === "user") {
+        label.innerHTML = '<i class="fas fa-user"></i> You';
+      } else {
+        label.innerHTML = '<i class="fas fa-robot"></i> Lumina';
+      }
+
+      const contentP = document.createElement("div");
+      contentP.className = "message-content";
+      contentP.textContent = content;
+
+      bubbleDiv.appendChild(label);
+      bubbleDiv.appendChild(contentP);
+
+      if (role === "ai") {
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "message-actions";
+
+        const playBtn = document.createElement("button");
+        playBtn.className = "action-btn";
+        playBtn.innerHTML = '<i class="fas fa-play"></i>';
+        playBtn.title = "Play response";
+        playBtn.addEventListener("click", () => {
+          if (playBtn.classList.contains('playing')) {
+            stopSpeaking();
+          } else {
+            speak(content, playBtn);
+          }
+        });
+
+        actionsDiv.appendChild(playBtn);
+        bubbleDiv.appendChild(actionsDiv);
+      }
+
+      messageDiv.appendChild(bubbleDiv);
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Show typing indicator
+    function showTyping() {
+      const typingDiv = document.createElement("div");
+      typingDiv.className = "message ai-message";
+      
+      const bubbleDiv = document.createElement("div");
+      bubbleDiv.className = "bubble ai-bubble";
+      
+      const label = document.createElement("div");
+      label.className = "message-label";
+      label.innerHTML = '<i class="fas fa-robot"></i> Lumina';
+      
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "typing";
+      contentDiv.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      `;
+      
+      bubbleDiv.appendChild(label);
+      bubbleDiv.appendChild(contentDiv);
+      typingDiv.appendChild(bubbleDiv);
+      chatBox.appendChild(typingDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      
+      return typingDiv;
+    }
+
+    // Initialize speech recognition
+    function initSpeechRecognition() {
+      recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        statusEl.textContent = "Listening... Speak now";
+        statusEl.style.color = "var(--primary)";
+        statusEl.classList.add("pulse");
+      };
+
+      recognition.onresult = async (event) => {
+        const transcript = event.results[0][0].transcript;
+        addMessage("user", transcript);
+        
+        // Show typing indicator
+        const typingIndicator = showTyping();
+        
+        try {
+          const response = await fetch("/listen", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: transcript })
+          });
+
+          if (!response.ok) {
+            throw new Error(await response.text() || "Request failed");
+          }
+
+          const data = await response.json();
+          
+          // Remove typing indicator
+          chatBox.removeChild(typingIndicator);
+          
+          // Add AI response
+          addMessage("ai", data.response);
+
+        } catch (error) {
+          console.error("Error:", error);
+          chatBox.removeChild(typingIndicator);
+          addMessage("ai", "Sorry, I encountered an error. Please try again.");
+          statusEl.textContent = `Error: ${error.message}`;
+          statusEl.style.color = "var(--secondary)";
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Recognition error:", event.error);
+        statusEl.textContent = `Error: ${event.error}`;
+        statusEl.style.color = "var(--secondary)";
+        isListening = false;
+        listenBtn.disabled = false;
+        listenBtn.innerHTML = '<i class="fas fa-microphone"></i> Start Talking';
+        statusEl.classList.remove("pulse");
+      };
+
+      recognition.onend = () => {
+        if (isListening) {
+          statusEl.textContent = "Ready";
+          statusEl.style.color = "var(--text-light)";
+          statusEl.classList.remove("pulse");
+          isListening = false;
+          listenBtn.disabled = false;
+          listenBtn.innerHTML = '<i class="fas fa-microphone"></i> Start Talking';
+        }
+      };
+    }
+
+    // Handle listen button click
+    function toggleListening() {
+      if (isListening) {
+        recognition.stop();
+        isListening = false;
+        listenBtn.disabled = false;
+        listenBtn.innerHTML = '<i class="fas fa-microphone"></i> Start Talking';
+        statusEl.textContent = "Ready";
+        statusEl.style.color = "var(--text-light)";
+        statusEl.classList.remove("pulse");
+      } else {
+        if (!recognition) {
+          initSpeechRecognition();
+        }
+        isListening = true;
+        listenBtn.disabled = true;
+        listenBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Listening...';
+        recognition.start();
+      }
+    }
+
+    // Event listeners
+    listenBtn.addEventListener("click", toggleListening);
+
+    // Initial welcome message
+    window.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        addMessage("ai", "Hello! I'm Lumina, your AI assistant. Click the microphone button and speak to me.");
+      }, 800);
+    });
+
+    // Prevent multiple voice instances
+    window.addEventListener('beforeunload', () => {
+      stopSpeaking();
+      if (recognition) {
+        recognition.stop();
+      }
+    });
+  </script>
+</body>
+</html>
